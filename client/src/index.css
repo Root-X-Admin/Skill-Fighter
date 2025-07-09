@@ -2,16 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* === GLOBAL BODY STYLES === */
 body {
+  @apply dark:bg-darkGray dark:text-white transition-colors duration-300;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
+/* === CODE BLOCK FONT === */
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* === FADE-IN / FADE-OUT MOTIVATIONAL MESSAGES === */
+.fade-in-out {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: fadeInOut 6s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+/* === PULSING ROAST TEXT === */
+@keyframes pulseSlow {
+  0%, 100% {
+    text-shadow: 0 0 8px #ff00ff, 0 0 12px #ff00ff;
+  }
+  50% {
+    text-shadow: 0 0 16px #ff00ff, 0 0 24px #ff00ff;
+  }
+}
+.animate-pulseSlow {
+  animation: pulseSlow 3s ease-in-out infinite;
+}
+
+/* === BUTTON GLOW === */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+  }
+  50% {
+    box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
+  }
+}
+.animate-glow {
+  animation: glow 3s infinite ease-in-out;
+}
+
+/* === ROAST TEXT FADE/POP === */
+@keyframes fadeSlow {
+  0%, 100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeSlow {
+  animation: fadeSlow 6s ease-in-out infinite;
+}
+
+/* === SHAKE ON INVALID ATTEMPT === */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
 }

@@ -1,17 +1,19 @@
-// server/index.js
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
-
-
+const connectDB = require('./db');
 require('dotenv').config();
 
 const app = express();
-const connectDB = require('./db');
 connectDB();
-app.use('/api', authRoutes);
+
+// ✅ Middleware FIRST
 app.use(cors());
 app.use(express.json());
+
+// ✅ Routes AFTER middleware
+app.use('/api', authRoutes);
+
 app.get('/', (req, res) => {
     res.send('SkillFighter API is running');
 });

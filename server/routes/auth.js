@@ -15,9 +15,15 @@ router.post('/register', async (req, res) => {
         const user = new User({ username, email, password: hashed });
         await user.save();
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        // ✅ Include username in token
+        const token = jwt.sign(
+            { id: user._id, username: user.username },
+            process.env.JWT_SECRET
+        );
+
         res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ msg: 'Server error' });
     }
 });
@@ -32,9 +38,15 @@ router.post('/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        // ✅ Include username in token
+        const token = jwt.sign(
+            { id: user._id, username: user.username },
+            process.env.JWT_SECRET
+        );
+
         res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ msg: 'Server error' });
     }
 });
