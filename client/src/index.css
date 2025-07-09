@@ -2,18 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* === GLOBAL BODY STYLES === */
 body {
   @apply dark:bg-darkGray dark:text-white transition-colors duration-300;
   margin: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden; /* 👈 Prevent vertical scroll too */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-  overflow-x: hidden;
 }
+
 
 /* === CODE BLOCK FONT === */
 code {
