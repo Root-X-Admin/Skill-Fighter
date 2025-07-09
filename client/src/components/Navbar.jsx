@@ -36,7 +36,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="sticky top-0 z-50 flex justify-between items-center px-6 py-4 bg-[#0b0b0b]/90 backdrop-blur border-b border-neonBlue shadow-md">
+        <nav className="z-50 flex justify-between items-center px-6 py-4 bg-[#0b0b0b]/90 backdrop-blur border-b border-neonBlue shadow-md">
             {/* Logo */}
             <Link
                 to="/"

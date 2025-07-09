@@ -19,7 +19,7 @@ module.exports = {
         fadeUp: 'fadeUp 1s ease-out forwards',
         blinkLong: 'blinkLong 4s ease-in-out infinite',
         gradientShift: 'gradientShift 6s ease infinite',
-        floatSlow: 'float 4s ease-in-out infinite', // ✅ New
+        floatSlow: 'float 4s ease-in-out infinite', // ✅ Added
       },
       keyframes: {
         fade: {

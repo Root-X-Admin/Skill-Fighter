@@ -1,17 +1,16 @@
+require('dotenv').config(); // ✅ Load .env from same folder
+
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const connectDB = require('./db');
-require('dotenv').config();
 
 const app = express();
 connectDB();
 
-// ✅ Middleware FIRST
 app.use(cors());
 app.use(express.json());
 
-// ✅ Routes AFTER middleware
 app.use('/api', authRoutes);
 
 app.get('/', (req, res) => {
