@@ -97,3 +97,57 @@ code {
 .animate-shake {
   animation: shake 0.4s ease-in-out;
 }
+
+@keyframes neonCycle {
+  0% {
+    opacity: 0.8;
+    background-image: linear-gradient(to right, #0fffc1, #0ff);
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  25% {
+    opacity: 1;
+    background-image: linear-gradient(to right, #0ff, #00faff);
+  }
+  50% {
+    opacity: 0.85;
+    background-image: linear-gradient(to right, #00faff, #00c3ff);
+  }
+  75% {
+    opacity: 1;
+    background-image: linear-gradient(to right, #00c3ff, #72f);
+  }
+  100% {
+    opacity: 0.8;
+    background-image: linear-gradient(to right, #72f, #0fffc1);
+  }
+}
+
+.animate-neon-cycle {
+  animation: neonCycle 6s ease-in-out infinite;
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.neon-gradient-text {
+  background: linear-gradient(270deg, #0fffc1, #00c3ff, #8a2be2, #ff00ff, #0fffc1);
+  background-size: 600% 600%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: gradientShift 8s ease-in-out infinite;
+}
