@@ -1,0 +1,16 @@
+live battle (for hold)
+
+solo challenges:
+    coding challenges   
+    quiz
+    aptitude
+    typing speed
+    (more if necessary)
+
+multiplayer:
+    each user completes his or her challenges according to their time and best one would be winner
+    display how many battles won 
+    when timer starts after that qurstion is displayed
+    if one user challenges 
+
+all over stats 
