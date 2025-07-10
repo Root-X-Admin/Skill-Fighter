@@ -20,8 +20,14 @@ module.exports = {
         blinkLong: 'blinkLong 4s ease-in-out infinite',
         gradientShift: 'gradientShift 6s ease infinite',
         floatSlow: 'float 4s ease-in-out infinite', // ✅ Added
+        blink: 'blink 1.2s infinite steps(2, start)',
+
       },
       keyframes: {
+        blink: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
+        },
         fade: {
           '0%, 100%': { opacity: '0.2' },
           '50%': { opacity: '1' },

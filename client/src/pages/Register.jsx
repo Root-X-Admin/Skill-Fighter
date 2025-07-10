@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
-
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 const roastLines = [
     "Oh, NOW you want to join?",
@@ -33,11 +34,11 @@ export default function Register() {
     };
 
     const validateForm = () => {
-        const usernameRegex = /^[a-z0-9-]{1,10}$/;
+        const usernameRegex = /^[a-z0-9-]{1,15}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!usernameRegex.test(form.username)) {
-            toast.error("Username must be lowercase, max 10 chars, only a-z, 0-9, and dashes allowed.", {
+            toast.error("Username must be lowercase, max 15 chars, only a-z, 0-9, and dashes allowed.", {
                 duration: 1500,
                 style: {
                     background: "#220011",
@@ -93,6 +94,25 @@ export default function Register() {
             setIsSubmitting(false);
         }
     };
+
+    const handleGoogleLogin = async (decoded) => {
+        const rawName = decoded.name || decoded.email.split('@')[0];
+        const username = rawName.toLowerCase().replace(/\s+/g, '-').slice(0, 15);
+
+        try {
+            const res = await axios.post('http://localhost:5000/api/google-auth', {
+                username,
+                email: decoded.email,
+            });
+
+            localStorage.setItem('token', res.data.token);
+            toast.success('Arena access granted 💥');
+            setTimeout(() => navigate('/'), 1500);
+        } catch (err) {
+            toast.error(err.response?.data?.msg || 'Google Sign-In failed');
+        }
+    };
+
 
     return (
         <div className="relative w-full h-screen bg-[#0e0e0e] overflow-hidden text-white font-sans flex items-center justify-center">
@@ -171,6 +191,39 @@ export default function Register() {
                 >
                     {isSubmitting ? 'Registering...' : 'Enter the Arena 🔥'}
                 </button>
+
+                <div className="mt-4 flex justify-center group">
+                    <div className="relative w-[60%] max-w-xs">
+                        {/* ⚡ Energy Glow Layer */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen 
+                        rounded-full blur-md opacity-50 group-hover:opacity-80 transition duration-300 animate-pulseSlow">
+                        </div>
+
+                        {/* Google Login Button (wrapped) */}
+                        <div className="relative z-10 rounded-full overflow-hidden shadow-neon hover:scale-[1.03] transition-all duration-300">
+                            <div className="p-[12px]">
+                                <GoogleLogin
+                                    onSuccess={(credentialResponse) => {
+                                        if (credentialResponse.credential) {
+                                            const decoded = jwtDecode(credentialResponse.credential);
+                                            handleGoogleLogin(decoded);
+                                        } else {
+                                            toast.error('Invalid Google credential received');
+                                        }
+                                    }}
+                                    onError={() => toast.error('Google Sign-In failed')}
+                                    useOneTap={false}
+                                    auto_select={false}
+                                    theme="filled_black"
+                                    size="large"
+                                    text="continue_with"
+                                    width="100%"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </form>
         </div>
     );

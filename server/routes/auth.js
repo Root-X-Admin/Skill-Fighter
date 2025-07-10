@@ -132,4 +132,35 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
+router.post('/google-auth', async (req, res) => {
+    let { email, username } = req.body;
+    try {
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Check if the username is already taken
+            let tempUsername = username;
+            let suffix = 1;
+            while (await User.findOne({ username: tempUsername })) {
+                tempUsername = `${username}-${suffix}`;
+                suffix++;
+            }
+
+            user = new User({ email, username: tempUsername, password: 'google-auth' });
+            await user.save();
+        }
+
+        const token = jwt.sign(
+            { id: user._id, username: user.username },
+            process.env.JWT_SECRET
+        );
+
+        res.json({ token, user: { id: user._id, username: user.username } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Google authentication failed' });
+    }
+});
+
+
 module.exports = router;

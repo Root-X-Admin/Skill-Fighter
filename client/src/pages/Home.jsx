@@ -28,8 +28,9 @@ const cardPositions = [
 export default function Home() {
     const [user, setUser] = useState(null);
     const [placedMsgs, setPlacedMsgs] = useState([]);
-    const [typedText, setTypedText] = useState('');
     const [showMainCard, setShowMainCard] = useState(false);
+    const [cardVisible, setCardVisible] = useState(false);
+
 
     const finalText = "Do you have what it takes to join SkillFighter?";
 
@@ -64,24 +65,15 @@ export default function Home() {
                 i++;
             } else {
                 clearInterval(interval);
-                setTimeout(() => setShowMainCard(true), 1000);
+                setShowMainCard(true);
+                setTimeout(() => setCardVisible(true), 50); // slight delay to allow initial state to apply
+
             }
         }, 800);
 
         return () => clearInterval(interval);
     }, [user]);
 
-    useEffect(() => {
-        if (!showMainCard || user) return;
-
-        let i = 0;
-        const type = setInterval(() => {
-            setTypedText(finalText.slice(0, i + 1));
-            i++;
-            if (i === finalText.length) clearInterval(type);
-        }, 45);
-        return () => clearInterval(type);
-    }, [showMainCard, user]);
 
     return (
         <div className="relative w-full h-screen overflow-hidden bg-[#0e0e0e] text-white font-sans">
@@ -108,17 +100,24 @@ export default function Home() {
 
             {/* Main Call-to-Action Card */}
             {!user && showMainCard && (
-                <div className="fixed inset-0 flex items-center justify-center z-20">
-                    <div className="w-[90%] max-w-md bg-white/5 backdrop-blur-md border border-white/10 shadow-xl rounded-2xl p-8 animate-floatSlow animate-fadeIn text-center">
+                <div className="pointer-events-none fixed inset-0 flex items-center justify-center z-10">
+                    <div
+                        className={`
+                        pointer-events-auto w-[90%] max-w-md 
+                        bg-white/5 backdrop-blur-md border border-white/10 shadow-xl rounded-2xl p-8 
+                        text-center transform transition-all duration-700 ease-out animate-floatSlow
+                        ${cardVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}
+                    `}
+                    >
                         <h1 className="text-2xl sm:text-3xl font-bold text-neonGreen mb-6 tracking-wide min-h-[3rem]">
-                            {typedText}
+                            {finalText}
                         </h1>
                         <button
                             onClick={() => window.location.href = "/register"}
                             className={`w-full py-3 rounded-lg font-bold text-lg tracking-wide text-black shadow-lg transition-all duration-300
-                                bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen
-                                bg-[length:200%_200%] bg-[position:0%_50%] animate-gradientShift
-                                hover:scale-105 hover:shadow-neon`}
+                            bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen
+                            bg-[length:200%_200%] bg-[position:0%_50%] animate-gradientShift
+                            hover:scale-105 hover:shadow-neon`}
                         >
                             Join the Battle ⚔️
                         </button>
@@ -137,4 +136,5 @@ export default function Home() {
             )}
         </div>
     );
+
 }
