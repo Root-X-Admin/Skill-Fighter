@@ -2,6 +2,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
+
 
 export default function Login() {
     const [form, setForm] = useState({ identifier: '', password: '' });
@@ -11,6 +13,7 @@ export default function Login() {
     const [newPass, setNewPass] = useState('');
     const [confirmPass, setConfirmPass] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -34,14 +37,17 @@ export default function Login() {
 
     const handleSendOtp = async () => {
         if (!email) return toast.error('Enter your email first!');
+        setIsSendingOtp(true);
         try {
             await axios.post('http://localhost:5000/api/send-otp', { email });
             toast.success('OTP sent 📩');
             setForgotStep(2);
         } catch (err) {
             toast.error(err.response?.data?.msg || 'Failed to send OTP');
+            setIsSendingOtp(false); // 🔄 re-enable if failed
         }
     };
+
 
     const handleVerifyOtp = async () => {
         if (!otp) return toast.error('Enter OTP!');
@@ -55,10 +61,20 @@ export default function Login() {
     };
 
     const handleResetPassword = async () => {
-        if (newPass.length < 8) return toast.error('Password must be 8+ chars');
-        if (newPass !== confirmPass) return toast.error('Passwords do not match');
+        if (newPass.length < 8) {
+            toast.error('Password must be at least 8 characters long');
+            return;
+        }
+        if (newPass !== confirmPass) {
+            toast.error('Passwords do not match');
+            return;
+        }
+
         try {
-            await axios.post('http://localhost:5000/api/reset-password', { email, newPassword: newPass });
+            await axios.post('http://localhost:5000/api/reset-password', {
+                email,
+                newPassword: newPass,
+            });
             toast.success('Password updated 🔒');
             setForgotStep(0);
             setForm({ identifier: '', password: '' });
@@ -67,12 +83,32 @@ export default function Login() {
         }
     };
 
+
     return (
         <div className="relative flex items-center justify-center min-h-screen bg-[#0e0e0e] text-white overflow-hidden px-4">
             {/* Floating insults */}
             <span className="absolute top-[10%] left-[8%] text-xs text-red-400 animate-fadeSlow">"Forgot your skills?"</span>
             <span className="absolute bottom-[15%] right-[8%] text-xs text-yellow-400 animate-fadeSlow">"Still trying to remember password?"</span>
             <span className="absolute top-[45%] right-[2%] text-xs text-cyan-400 animate-fadeSlow">"Just login or stay scared."</span>
+
+            <Toaster
+                position="top-center"
+                containerStyle={{ top: 210, zIndex: 9999 }} // force position
+                toastOptions={{
+                    duration: 1500,
+                    style: {
+                        background: '#0e0e0e',
+                        color: '#00ffe7',
+                        border: '1px solid #00ffe7',
+                        boxShadow: '0 0 10px #00ffe7',
+                        fontWeight: 'bold',
+                    },
+                    iconTheme: {
+                        primary: '#00ffe7',
+                        secondary: '#000',
+                    },
+                }}
+            />
 
             {/* Glassy Neon Auth Card */}
             <form
@@ -114,7 +150,12 @@ export default function Login() {
                         </button>
                         <p
                             className="text-sm text-cyan-400 text-center mt-4 cursor-pointer hover:underline"
-                            onClick={() => setForgotStep(1)}
+                            onClick={() => {
+                                setForgotStep(1);
+                                setIsSendingOtp(false);
+                                setEmail('');
+                            }}
+
                         >
                             Forgot Password?
                         </p>
@@ -132,10 +173,15 @@ export default function Login() {
                         <button
                             type="button"
                             onClick={handleSendOtp}
-                            className="w-full py-3 rounded-lg font-bold text-lg tracking-wide text-black shadow-lg transition-all duration-300 bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen bg-[length:200%_200%] bg-[position:0%_50%] animate-gradientShift hover:scale-105 hover:shadow-neon"
+                            disabled={isSendingOtp}
+                            className={`w-full py-3 rounded-lg font-bold text-lg tracking-wide text-black shadow-lg transition-all duration-300 
+        bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen 
+        bg-[length:200%_200%] bg-[position:0%_50%] animate-gradientShift 
+        ${isSendingOtp ? 'cursor-not-allowed opacity-50' : 'hover:scale-105 hover:shadow-neon'}`}
                         >
-                            Send OTP
+                            {isSendingOtp ? 'Sending OTP...' : 'Send OTP'}
                         </button>
+
                     </>
                 )}
 
