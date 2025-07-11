@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
@@ -8,8 +8,30 @@ export default function Navbar() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
+
     const navigate = useNavigate();
 
+    const notificationRef = useRef(null);
+    const dropdownRef = useRef(null);
+    const dropdownTimer = useRef(null);
+
+    // ⛔️ Close both dropdowns on outside click
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (
+                notificationRef.current && !notificationRef.current.contains(e.target) &&
+                dropdownRef.current && !dropdownRef.current.contains(e.target)
+            ) {
+                setShowNotifications(false);
+                setDropdownOpen(false);
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // 🔄 Fetch user & notifications
     useEffect(() => {
         const updateUser = async () => {
             const token = localStorage.getItem('token');
@@ -51,7 +73,7 @@ export default function Navbar() {
                 SkillFighter
             </Link>
 
-            <div className="flex gap-4 items-center text-sm sm:text-base font-semibold relative">
+            <div className="flex gap-6 items-center text-sm sm:text-base font-semibold relative">
                 {!user ? (
                     <>
                         <Link to="/login" className="text-neonBlue hover:text-neonGreen transition">Login</Link>
@@ -59,23 +81,33 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
-                        {/* 🔔 Notification Icon */}
-                        <div className="relative cursor-pointer" onClick={() => setShowNotifications(!showNotifications)}>
+                        {/* 🔔 Notification Bell */}
+                        <div
+                            ref={notificationRef}
+                            className="relative cursor-pointer"
+                            onClick={() => setShowNotifications(!showNotifications)}
+                        >
                             <span className="text-white text-xl">🔔</span>
                             {notifications.length > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                                     {notifications.length}
                                 </span>
                             )}
-                            {/* Notification Dropdown */}
                             {showNotifications && (
-                                <div className="absolute right-12 top-10 bg-[#1c1c1c] text-white rounded shadow-md w-64 z-50 border border-gray-700 p-2">
+                                <div className="absolute right-1 top-10 bg-[#1c1c1c] text-white rounded shadow-md w-64 z-50 border border-gray-700 p-2">
                                     <h4 className="text-sm font-bold mb-2 border-b pb-1 border-gray-600">Notifications</h4>
                                     {notifications.length === 0 ? (
                                         <p className="text-sm text-gray-400">No new notifications</p>
                                     ) : (
                                         notifications.map((n) => (
-                                            <div key={n._id} className="text-sm py-1 border-b border-gray-700 last:border-none">
+                                            <div
+                                                key={n._id}
+                                                className="text-sm py-1 border-b border-gray-700 last:border-none cursor-pointer hover:bg-blue-700/30"
+                                                onClick={() => {
+                                                    setShowNotifications(false);
+                                                    navigate('/friends?tab=incoming');
+                                                }}
+                                            >
                                                 <span className="text-blue-400">{n.username}</span> sent you a friend request
                                             </div>
                                         ))
@@ -84,10 +116,19 @@ export default function Navbar() {
                             )}
                         </div>
 
-                        {/* 🧍 User Avatar Dropdown */}
-                        <div className="relative">
+                        {/* 🧍 User Dropdown (Hover-based with delay) */}
+                        <div
+                            className="relative"
+                            ref={dropdownRef}
+                            onMouseEnter={() => {
+                                clearTimeout(dropdownTimer.current);
+                                setDropdownOpen(true);
+                            }}
+                            onMouseLeave={() => {
+                                dropdownTimer.current = setTimeout(() => setDropdownOpen(false), 2000);
+                            }}
+                        >
                             <div
-                                onClick={() => setDropdownOpen(!dropdownOpen)}
                                 className="w-9 h-9 bg-neonGreen text-darkGray rounded-full flex items-center justify-center font-bold text-sm cursor-pointer ring-2 ring-neonBlue hover:scale-105 transition"
                                 title={user.username}
                             >
