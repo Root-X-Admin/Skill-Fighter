@@ -125,7 +125,7 @@ export default function Navbar() {
                                 setDropdownOpen(true);
                             }}
                             onMouseLeave={() => {
-                                dropdownTimer.current = setTimeout(() => setDropdownOpen(false), 2000);
+                                dropdownTimer.current = setTimeout(() => setDropdownOpen(false), 500);
                             }}
                         >
                             <div
@@ -142,7 +142,7 @@ export default function Navbar() {
                                         className="block px-4 py-2 hover:bg-neonBlue/30 text-sm"
                                         onClick={() => setDropdownOpen(false)}
                                     >
-                                        🧍 Profile
+                                        Profile
                                     </Link>
 
                                     <Link
@@ -150,14 +150,14 @@ export default function Navbar() {
                                         className="block px-4 py-2 hover:bg-neonBlue/30 text-sm"
                                         onClick={() => setDropdownOpen(false)}
                                     >
-                                        🧑‍🤝‍🧑 Friends
+                                        Friends
                                     </Link>
 
                                     <button
                                         onClick={handleLogout}
                                         className="w-full text-left px-4 py-2 hover:bg-red-600 text-sm"
                                     >
-                                        🚪 Logout
+                                        Logout
                                     </button>
                                 </div>
                             )}
