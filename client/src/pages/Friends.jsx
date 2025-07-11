@@ -41,12 +41,22 @@ export default function Friends() {
             await axios.post(`http://localhost:5000/api/friends/accept/${fromId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+
             toast.success('Friend request accepted');
+
+            // Remove from incoming
             setIncoming(prev => prev.filter(u => u._id !== fromId));
+
+            // Re-fetch updated friends list
+            const headers = { Authorization: `Bearer ${token}` };
+            const friendsRes = await axios.get('http://localhost:5000/api/friends/list', { headers });
+            setFriends(friendsRes.data.friends || []);
+            
         } catch {
             toast.error('Failed to accept request');
         }
     };
+
 
     return (
         <div className="min-h-screen px-6 py-8 bg-[#0b0b0b] text-white">
