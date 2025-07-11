@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { Toaster, toast } from 'react-hot-toast';
@@ -9,6 +10,7 @@ export default function Friends() {
     const [sent, setSent] = useState([]);
     const [friends, setFriends] = useState([]);
     const [userId, setUserId] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,22 +43,19 @@ export default function Friends() {
             await axios.post(`http://localhost:5000/api/friends/accept/${fromId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
             toast.success('Friend request accepted');
-
-            // Remove from incoming
             setIncoming(prev => prev.filter(u => u._id !== fromId));
 
-            // Re-fetch updated friends list
+            // Refresh friend list
             const headers = { Authorization: `Bearer ${token}` };
             const friendsRes = await axios.get('http://localhost:5000/api/friends/list', { headers });
             setFriends(friendsRes.data.friends || []);
-            
         } catch {
             toast.error('Failed to accept request');
         }
     };
 
+    const currentList = tab === 'incoming' ? incoming : tab === 'sent' ? sent : friends;
 
     return (
         <div className="min-h-screen px-6 py-8 bg-[#0b0b0b] text-white">
@@ -83,12 +82,20 @@ export default function Friends() {
 
             {/* Content */}
             <div className="space-y-3">
-                {tab === 'incoming' && incoming.length === 0 && <p className="text-gray-500">No incoming requests</p>}
-                {tab === 'sent' && sent.length === 0 && <p className="text-gray-500">No requests sent</p>}
-                {tab === 'friends' && friends.length === 0 && <p className="text-gray-500">You have no friends yet</p>}
+                {currentList.length === 0 && (
+                    <p className="text-gray-500">
+                        {tab === 'incoming' && 'No incoming requests'}
+                        {tab === 'sent' && 'No requests sent'}
+                        {tab === 'friends' && 'You have no friends yet'}
+                    </p>
+                )}
 
-                {(tab === 'incoming' ? incoming : tab === 'sent' ? sent : friends).map(user => (
-                    <div key={user._id} className="flex items-center justify-between bg-[#1c1c1c] px-4 py-2 rounded hover:bg-[#2c2c2c]">
+                {currentList.map(user => (
+                    <div
+                        key={user._id}
+                        onClick={() => navigate(`/${user.username}`)}
+                        className="flex items-center justify-between bg-[#1c1c1c] px-4 py-2 rounded hover:bg-[#2c2c2c] cursor-pointer"
+                    >
                         <div className="flex items-center gap-3">
                             {user.profilePic ? (
                                 <img
@@ -106,7 +113,10 @@ export default function Friends() {
 
                         {tab === 'incoming' && (
                             <button
-                                onClick={() => acceptRequest(user._id)}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent row click
+                                    acceptRequest(user._id);
+                                }}
                                 className="text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded"
                             >
                                 Accept
