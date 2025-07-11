@@ -139,12 +139,26 @@ export default function Profile() {
                                 src={`data:image/jpeg;base64,${profile.profilePic}`}
                                 alt="Avatar"
                                 className="w-20 h-20 rounded-full mb-2 border-2 border-blue-500 cursor-pointer hover:scale-105 transition-transform"
-                                onClick={() => !isOwner && setViewImageModal(true)}
+                                onClick={() => {
+                                    if (isOwner) {
+                                        setIsModalOpen(true); // open upload modal if owner
+                                    } else {
+                                        setViewImageModal(true); // view modal if visitor
+                                    }
+                                }}
+
                             />
                         ) : (
                             <div
                                 className="w-20 h-20 rounded-full bg-blue-700 flex items-center justify-center text-2xl font-bold mb-2 cursor-pointer hover:scale-105 transition-transform"
-                                onClick={() => !isOwner && setViewImageModal(true)}
+                                onClick={() => {
+                                    if (isOwner) {
+                                        setIsModalOpen(true); // open upload modal if owner
+                                    } else {
+                                        setViewImageModal(true); // view modal if visitor
+                                    }
+                                }}
+
                             >
                                 {profile.username[0].toUpperCase()}
                             </div>
