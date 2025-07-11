@@ -73,6 +73,19 @@ export default function Navbar() {
                 SkillFighter
             </Link>
 
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-md z-40">
+                <div className="relative neon-ring animate-borderFlow p-[3px] rounded-xl">
+                    <input
+                        type="text"
+                        placeholder="Search players, quizzes, topics..."
+                        className="w-full px-4 py-2 bg-[#0e0e0e] text-neonGreen placeholder-gray-500 
+                       focus:outline-none rounded-xl border-0 text-sm sm:text-base"
+                    />
+                </div>
+            </div>
+
+
+
             <div className="flex gap-6 items-center text-sm sm:text-base font-semibold relative">
                 {!user ? (
                     <>
@@ -81,6 +94,11 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
+
+                        <Link to="/arena" className="hover:text-neonGreen transition">🏟️ Arena</Link>
+                        <Link to="/challenges" className="hover:text-neonGreen transition">🎯 Challenges</Link>
+                        <Link to="/leaderboard" className="hover:text-neonGreen transition">🏆 Leaderboard</Link>
+
                         {/* 🔔 Notification Bell */}
                         <div
                             ref={notificationRef}

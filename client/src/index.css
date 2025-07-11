@@ -158,3 +158,23 @@ code {
   color: transparent;
   animation: gradientShift 8s ease-in-out infinite;
 }
+
+@keyframes borderFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.neon-ring {
+    background: linear-gradient(270deg, #00f2ff, #1d1b1bff, #a374e0ff, #d34040ff);
+    background-size: 600% 600%;
+    box-shadow: 0 0 px #00fff780, 0 0 20px #00f2ff40;
+    animation: borderFlow 10s ease-in-out infinite;
+    transition: box-shadow 0.3s ease-in-out;
+}
