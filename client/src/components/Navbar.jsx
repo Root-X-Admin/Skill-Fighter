@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-import { Toaster } from 'react-hot-toast';
 
 export default function Navbar() {
     const [user, setUser] = useState(null);
@@ -44,10 +43,10 @@ export default function Navbar() {
 
     return (
         <nav className="z-50 flex justify-between items-center px-6 py-4 bg-[#0b0b0b]/90 backdrop-blur border-b border-neonBlue shadow-md relative">
-            <Toaster position="top-center" />
+            {/* 🔥 Brand Name */}
             <Link
                 to="/"
-                className="text-2xl sm:text-3xl font-extrabold tracking-wide neon-gradient-text"
+                className="text-2xl font-extrabold tracking-wider bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen bg-clip-text text-transparent animate-gradientShift"
             >
                 SkillFighter
             </Link>
@@ -104,6 +103,7 @@ export default function Navbar() {
                                     >
                                         🧍 Profile
                                     </Link>
+
                                     <Link
                                         to="/friends"
                                         className="block px-4 py-2 hover:bg-neonBlue/30 text-sm"
