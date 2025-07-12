@@ -68,10 +68,14 @@ export default function Navbar() {
             {/* 🔥 Brand Name */}
             <Link
                 to="/"
-                className="text-2xl font-extrabold tracking-wider bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen bg-clip-text text-transparent animate-gradientShift"
+                className="text-2xl font-extrabold tracking-wider 
+               bg-gradient-to-r from-neonBlue via-pink-500 to-neonGreen 
+               bg-[length:200%_200%] bg-clip-text text-transparent 
+               animate-gradientShift"
             >
                 SkillFighter
             </Link>
+
 
             <div className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-md z-40">
                 <div className="relative neon-ring animate-borderFlow p-[3px] rounded-xl">

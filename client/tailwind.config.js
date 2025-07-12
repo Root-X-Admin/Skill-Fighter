@@ -19,10 +19,10 @@ module.exports = {
         fadeIn: 'fadeIn 1.2s ease-out forwards',
         fadeUp: 'fadeUp 1s ease-out forwards',
         blinkLong: 'blinkLong 4s ease-in-out infinite',
-        gradientShift: 'gradientShift 6s ease infinite',
+        gradientShift: 'gradientShift 3s ease infinite',
         floatSlow: 'float 4s ease-in-out infinite', // ✅ Added
         blink: 'blink 1.2s infinite steps(2, start)',
-
+        navbarFlow: 'navbarFlow 8s ease infinite',
       },
 
       keyframes: {
@@ -56,13 +56,15 @@ module.exports = {
             WebkitTextFillColor: 'transparent',
           },
         },
+        navbarFlow: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
         gradientShift: {
-          '0%, 100%': {
-            backgroundPosition: '0% 50%',
-          },
-          '50%': {
-            backgroundPosition: '100% 50%',
-          },
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
         },
         float: {
           '0%, 100%': {
