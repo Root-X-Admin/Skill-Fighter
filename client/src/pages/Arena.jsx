@@ -1,32 +1,27 @@
-// client/src/pages/Arena.jsx
-
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { Toaster, toast } from 'react-hot-toast';
 import { jwtDecode } from 'jwt-decode';
+import { Toaster, toast } from 'react-hot-toast';
 
 const socket = io('http://localhost:5000');
 
 export default function Arena() {
     const [paragraph, setParagraph] = useState('');
-    const [started, setStarted] = useState(false);
+    const [roomId, setRoomId] = useState('');
+    const [input, setInput] = useState('');
     const [timeLeft, setTimeLeft] = useState(60);
-    const [inputText, setInputText] = useState('');
+    const [started, setStarted] = useState(false);
+    const [mistakes, setMistakes] = useState(0);
+    const [correct, setCorrect] = useState(0);
+    const [finalResult, setFinalResult] = useState(null);
     const [opponentResult, setOpponentResult] = useState(null);
-    const [result, setResult] = useState(null);
-    const [roomId, setRoomId] = useState(null);
-    const intervalRef = useRef(null);
-    const inputRef = useRef('');
-    const token = localStorage.getItem('token');
-    const user = token ? jwtDecode(token) : null;
+    const decoded = jwtDecode(localStorage.getItem('token'));
+    const startTimeRef = useRef(null);
+    const timerRef = useRef(null);
 
-    const handleStartBattle = () => {
-        if (!user) {
-            toast.error('Please log in first');
-            return;
-        }
-        socket.emit('joinArena', user.username);
-        toast.loading('Searching for opponent...');
+    const startBattle = () => {
+        socket.emit('joinArena', decoded.username);
+        toast.loading('Matching...');
     };
 
     useEffect(() => {
@@ -34,19 +29,24 @@ export default function Arena() {
             toast.loading('Waiting for opponent...');
         });
 
-        socket.on('matchFound', ({ roomId, players, paragraph }) => {
+        socket.on('matchFound', ({ roomId, paragraph }) => {
             toast.dismiss();
+            toast.success('Match found!');
             setRoomId(roomId);
             setParagraph(paragraph);
+            setInput('');
+            setMistakes(0);
+            setCorrect(0);
+            setFinalResult(null);
+            setOpponentResult(null);
             setStarted(true);
+            startTimeRef.current = Date.now();
             setTimeLeft(60);
-            setInputText('');
 
-            intervalRef.current = setInterval(() => {
+            timerRef.current = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
-                        clearInterval(intervalRef.current);
-                        evaluateResult();
+                        clearInterval(timerRef.current);
                         return 0;
                     }
                     return prev - 1;
@@ -59,102 +59,102 @@ export default function Arena() {
         });
 
         return () => {
-            socket.off('matchFound');
             socket.off('waitingForOpponent');
+            socket.off('matchFound');
             socket.off('opponentResult');
         };
     }, []);
 
-    const evaluateResult = () => {
-        const typed = inputRef.current.trim();
-        const paragraphTrimmed = paragraph.trim();
+    // ⏳ When time runs out, calculate results
+    useEffect(() => {
+        if (started && timeLeft === 0) {
+            const duration = (Date.now() - startTimeRef.current) / 60000; // in minutes
+            const wpm = Math.round((correct / 5) / duration);
+            const accuracy = input.length ? Math.round((correct / input.length) * 100) : 0;
 
-        const wordCount = typed.length === 0 ? 0 : typed.split(/\s+/).length;
-        const accuracy = calculateAccuracy(typed, paragraphTrimmed);
+            const result = {
+                username: decoded.username,
+                wpm,
+                accuracy,
+                mistakes,
+            };
 
-        const resultData = {
-            username: user.username,
-            wpm: wordCount,
-            accuracy: isNaN(accuracy) ? 0 : accuracy,
-        };
+            setFinalResult(result);
+            socket.emit('submitResult', { roomId, result });
+        }
+    }, [timeLeft]);
 
-        setResult(resultData);
-        socket.emit('submitResult', { roomId, ...resultData });
-    };
+    const handleTyping = (e) => {
+        const typed = e.target.value;
+        const paraSlice = paragraph.slice(0, typed.length);
 
-    const calculateAccuracy = (typed, actual) => {
-        if (!typed || !actual) return 0;
+        let localCorrect = 0;
+        let localMistakes = 0;
 
-        // Remove punctuation from both strings for fair comparison
-        const removePunctuation = (str) => str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
-        const cleanTyped = removePunctuation(typed);
-        const cleanActual = removePunctuation(actual);
-
-        let correctChars = 0;
-        const minLength = Math.min(cleanTyped.length, cleanActual.length);
-
-        // Count correct characters
-        for (let i = 0; i < minLength; i++) {
-            if (cleanTyped[i] === cleanActual[i]) {
-                correctChars++;
-            }
+        for (let i = 0; i < typed.length; i++) {
+            if (typed[i] === paraSlice[i]) localCorrect++;
+            else localMistakes++;
         }
 
-        // Calculate accuracy based on character matches
-        const accuracy = (correctChars / cleanActual.length) * 100;
-
-        // Ensure accuracy is between 0 and 100
-        return Math.min(100, Math.max(0, Math.round(accuracy)));
+        setInput(typed);
+        setCorrect(localCorrect);
+        setMistakes(localMistakes);
     };
 
     return (
-        <div className="min-h-screen bg-[#0b0b0b] text-white flex flex-col items-center justify-center px-4">
+        <div className="min-h-screen bg-[#0b0b0b] text-white flex flex-col items-center justify-center px-4 py-8">
             <Toaster />
             {!started ? (
-                <button onClick={handleStartBattle} className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded text-lg font-bold">
-                    Start 1v1 Typing Battle
+                <button
+                    onClick={startBattle}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-500 px-8 py-3 rounded text-lg font-bold shadow-md animate-floatSlow"
+                >
+                    Start Typing Battle ⚔️
                 </button>
             ) : (
-                <>
-                    <h2 className="text-xl font-bold text-green-400 mb-4">Time Left: {timeLeft}s</h2>
-                    <p
-                        className="bg-[#1c1c1c] p-4 rounded mb-4 max-w-2xl select-none whitespace-pre-line"
-                        onContextMenu={(e) => e.preventDefault()}
-                    >
-                        {paragraph}
-                    </p>
-
-
+                <div className="w-full max-w-4xl flex flex-col gap-6">
+                    <h2 className="text-xl font-semibold text-green-400 text-center">⏱ Time Left: {timeLeft}s</h2>
+                    <div className="bg-[#1a1a1a] p-4 rounded text-gray-300 text-justify leading-relaxed">{paragraph}</div>
                     <textarea
-                        value={inputText}
-                        onChange={(e) => {
-                            setInputText(e.target.value);
-                            inputRef.current = e.target.value;
-                        }}
-                        className="w-full max-w-2xl h-40 p-4 rounded bg-[#111] border-2 border-blue-500"
+                        value={input}
+                        onChange={handleTyping}
                         disabled={timeLeft === 0}
+                        className="w-full p-4 h-40 bg-[#111] text-white border-2 border-blue-500 rounded focus:outline-none placeholder:text-gray-500"
                         placeholder="Start typing here..."
-                    />
-                    {result && (
-                        <div className="mt-4 text-center space-y-2">
-                            <p>✅ You typed: <strong>{result.wpm} WPM</strong></p>
-                            <p>🎯 Accuracy: <strong>{result.accuracy}%</strong></p>
+                    ></textarea>
+
+                    {finalResult && (
+                        <div className="text-center mt-6">
+                            <h3 className="text-lg font-bold text-blue-400 mb-2">🔥 Your Result</h3>
+                            <p>WPM: {finalResult.wpm}</p>
+                            <p>Accuracy: {finalResult.accuracy}%</p>
+                            <p>Mistakes: {finalResult.mistakes}</p>
+
                             {opponentResult && (
-                                <>
-                                    <p>🧍 Opponent typed: <strong>{opponentResult.wpm} WPM</strong></p>
-                                    <p>🎯 Opponent accuracy: <strong>{opponentResult.accuracy}%</strong></p>
-                                    <p className="text-xl font-bold mt-2 text-yellow-400">
-                                        {result.wpm > opponentResult.wpm
-                                            ? '🏆 You win!'
-                                            : result.wpm < opponentResult.wpm
-                                                ? '❌ You lose!'
-                                                : '🤝 It’s a tie!'}
-                                    </p>
-                                </>
+                                <div className="mt-6">
+                                    <h3 className="text-lg font-bold text-purple-400 mb-1">
+                                        🧍 Opponent: {opponentResult.username}
+                                    </h3>
+                                    <p>WPM: {opponentResult.wpm}</p>
+                                    <p>Accuracy: {opponentResult.accuracy}%</p>
+                                    <p>Mistakes: {opponentResult.mistakes}</p>
+
+                                    <h2 className="text-2xl mt-4 font-extrabold text-yellow-300">
+                                        {finalResult.wpm > opponentResult.wpm
+                                            ? '🏆 You Win!'
+                                            : finalResult.wpm < opponentResult.wpm
+                                                ? '❌ You Lose!'
+                                                : finalResult.accuracy > opponentResult.accuracy
+                                                    ? '🏆 You Win (More Accurate)!'
+                                                    : finalResult.accuracy < opponentResult.accuracy
+                                                        ? '❌ You Lose (Less Accurate)!'
+                                                        : '🤝 It’s a Tie!'}
+                                    </h2>
+                                </div>
                             )}
                         </div>
                     )}
-                </>
+                </div>
             )}
         </div>
     );
