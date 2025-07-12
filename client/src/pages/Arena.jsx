@@ -16,7 +16,7 @@ export default function Arena() {
     const [result, setResult] = useState(null);
     const [roomId, setRoomId] = useState(null);
     const intervalRef = useRef(null);
-
+    const inputRef = useRef('');
     const token = localStorage.getItem('token');
     const user = token ? jwtDecode(token) : null;
 
@@ -66,21 +66,45 @@ export default function Arena() {
     }, []);
 
     const evaluateResult = () => {
-        const wordsTyped = inputText.trim() === '' ? 0 : inputText.trim().split(/\s+/).length;
-        const accuracy = calculateAccuracy(inputText, paragraph);
-        const result = { username: user.username, accuracy, wpm: wordsTyped };
+        const typed = inputRef.current.trim();
+        const paragraphTrimmed = paragraph.trim();
 
-        setResult(result);
-        socket.emit('submitResult', { roomId, ...result });
+        const wordCount = typed.length === 0 ? 0 : typed.split(/\s+/).length;
+        const accuracy = calculateAccuracy(typed, paragraphTrimmed);
+
+        const resultData = {
+            username: user.username,
+            wpm: wordCount,
+            accuracy: isNaN(accuracy) ? 0 : accuracy,
+        };
+
+        setResult(resultData);
+        socket.emit('submitResult', { roomId, ...resultData });
     };
 
     const calculateAccuracy = (typed, actual) => {
-        if (actual.length === 0) return 0;
-        let correct = 0;
-        for (let i = 0; i < typed.length && i < actual.length; i++) {
-            if (typed[i] === actual[i]) correct++;
+        if (!typed || !actual) return 0;
+
+        // Remove punctuation from both strings for fair comparison
+        const removePunctuation = (str) => str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
+        const cleanTyped = removePunctuation(typed);
+        const cleanActual = removePunctuation(actual);
+
+        let correctChars = 0;
+        const minLength = Math.min(cleanTyped.length, cleanActual.length);
+
+        // Count correct characters
+        for (let i = 0; i < minLength; i++) {
+            if (cleanTyped[i] === cleanActual[i]) {
+                correctChars++;
+            }
         }
-        return Math.round((correct / actual.length) * 100);
+
+        // Calculate accuracy based on character matches
+        const accuracy = (correctChars / cleanActual.length) * 100;
+
+        // Ensure accuracy is between 0 and 100
+        return Math.min(100, Math.max(0, Math.round(accuracy)));
     };
 
     return (
@@ -93,10 +117,20 @@ export default function Arena() {
             ) : (
                 <>
                     <h2 className="text-xl font-bold text-green-400 mb-4">Time Left: {timeLeft}s</h2>
-                    <p className="bg-[#1c1c1c] p-4 rounded mb-4 max-w-2xl leading-relaxed whitespace-pre-line">{paragraph}</p>
+                    <p
+                        className="bg-[#1c1c1c] p-4 rounded mb-4 max-w-2xl select-none whitespace-pre-line"
+                        onContextMenu={(e) => e.preventDefault()}
+                    >
+                        {paragraph}
+                    </p>
+
+
                     <textarea
                         value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
+                        onChange={(e) => {
+                            setInputText(e.target.value);
+                            inputRef.current = e.target.value;
+                        }}
                         className="w-full max-w-2xl h-40 p-4 rounded bg-[#111] border-2 border-blue-500"
                         disabled={timeLeft === 0}
                         placeholder="Start typing here..."

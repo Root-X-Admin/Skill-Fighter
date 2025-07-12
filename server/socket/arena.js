@@ -55,5 +55,6 @@ module.exports = (io) => {
 };
 
 function generateParagraph() {
-    return `At the age of 35, David felt unfulfilled in his corporate job. He had spent the last 10 years climbing the ladder in finance, but his heart wasn't in it. He decided to take a leap of faith and pursue his passion for cooking. He enrolled in culinary school, worked as a line cook at a local restaurant, and eventually opened his own food truck. The first year was challenging, with long hours and razor-thin profit margins. But David's dedication and culinary skills paid off. Within 5 years, he had expanded to two brick-and-mortar restaurants and was featured in several food magazines. His career pivot was a testament to the power of following your passion and taking calculated risks.`;
+    return `At the age of 35, David felt unfulfilled in his corporate job. He had spent the last 10 years climbing the ladder in finance, but his heart wasn't in it. He decided to take a leap of faith and pursue his passion for cooking. He enrolled in culinary school, worked as a line cook at a local restaurant, and eventually opened his own food truck. The first year was challenging, with long hours and razor-thin profit margins. But David's dedication and culinary skills paid off. Within 5 years, he had expanded to two brick-and-mortar restaurants and was featured in several food magazines. His career pivot was a testament to the power of following your passion and taking calculated risks.`.replace(/\n/g, ' ');
 }
+

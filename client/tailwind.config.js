@@ -7,6 +7,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+
       colors: {
         neonBlue: '#00f0ff',
         neonGreen: '#39ff14',
@@ -23,6 +24,7 @@ module.exports = {
         blink: 'blink 1.2s infinite steps(2, start)',
 
       },
+
       keyframes: {
         blink: {
           '0%, 100%': { opacity: '1' },
