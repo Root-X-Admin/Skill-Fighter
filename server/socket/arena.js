@@ -7,7 +7,7 @@ module.exports = (io) => {
         socket.on('joinArena', (username) => {
             socket.username = username;
 
-            if (waitingPlayer) {
+            if (waitingPlayer && waitingPlayer.connected) {
                 const opponent = waitingPlayer;
                 waitingPlayer = null;
 
@@ -24,7 +24,13 @@ module.exports = (io) => {
                 });
             } else {
                 waitingPlayer = socket;
-                socket.emit('waitingForOpponent');
+            }
+        });
+
+        socket.on('cancelMatch', () => {
+            if (waitingPlayer === socket) {
+                waitingPlayer = null;
+                console.log('⛔ Matchmaking canceled by', socket.id);
             }
         });
 
@@ -35,8 +41,8 @@ module.exports = (io) => {
         socket.on('disconnect', () => {
             if (waitingPlayer === socket) {
                 waitingPlayer = null;
+                console.log('🔌 Disconnected while waiting:', socket.id);
             }
-            console.log('🔴 Socket disconnected:', socket.id);
         });
     });
 };
