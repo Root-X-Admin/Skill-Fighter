@@ -160,7 +160,7 @@ export default function Arena() {
         <div className="w-full min-h-screen max-h-screen overflow-y-auto bg-[#0b0b0b] text-white px-4 py-10">
             <Toaster />
             {!roomId ? (
-                <div className="w-full h-[70vh] flex items-center justify-center">
+                <div className="w-full h-[70vh] flex flex-col items-center justify-center gap-6">
                     <button
                         onClick={startBattle}
                         className="px-10 py-4 rounded-lg text-xl font-bold tracking-wide transition-all duration-300
@@ -170,9 +170,19 @@ export default function Arena() {
                     >
                         Start Typing Duel ⚔
                     </button>
-                </div>
 
+                    <button
+                        onClick={() => window.location.href = '/coding-arena'}
+                        className="px-10 py-4 rounded-lg text-xl font-bold tracking-wide transition-all duration-300
+        bg-gradient-to-br from-yellow-400 via-red-500 to-pink-600
+        text-black shadow-[0_0_15px_#ffcc00] hover:shadow-[0_0_30px_#ff00ff]
+        hover:scale-105 animate-fadeUp"
+                    >
+                        Start Coding Battle 💻
+                    </button>
+                </div>
             ) : (
+
                 <div className="max-w-5xl mx-auto flex flex-col items-center justify-start gap-10">
                     <h2 className="text-2xl font-bold text-center text-neonGreen drop-shadow-md">
                         ⏱ Time Left: {timeLeft}s

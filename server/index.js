@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const friendRoutes = require('./routes/friends');
+const runRoute = require('./routes/run');
 const connectDB = require('./db');
 
 const app = express();
@@ -20,6 +21,7 @@ const io = new Server(server, {
 
 // 🧠 Plug in Socket-based Arena battle logic
 require('./socket/arena')(io);
+require('./socket/coding')(io); // 👈 Added Coding Battle socket logic
 
 // 🧬 DB connection
 connectDB();
@@ -33,6 +35,7 @@ app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use('/api', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/friends', friendRoutes);
+app.use('/api/run', runRoute);
 
 // 🏁 Root Route
 app.get('/', (req, res) => {

@@ -13,7 +13,7 @@ body {
   margin: 0;
   height: 100%;
   overflow-x: hidden;
-  overflow-y: hidden; /* 👈 Prevent vertical scroll too */
+ /* 👈 Prevent vertical scroll too */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
