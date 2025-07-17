@@ -37,6 +37,21 @@ export default function Friends() {
         fetchData();
     }, []);
 
+    const deleteFriend = async (friendUsername) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:5000/api/friends/friends/${friendUsername}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success('Friend removed');
+            setFriends(prev => prev.filter(f => f.username !== friendUsername));
+        } catch {
+            toast.error('Failed to delete friend');
+        }
+    };
+
+
+
     const acceptRequest = async (fromId) => {
         try {
             const token = localStorage.getItem('token');
@@ -128,7 +143,15 @@ export default function Friends() {
                         )}
 
                         {tab === 'friends' && (
-                            <span className="text-xs text-gray-400">✓ Friend</span>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteFriend(user.username);
+                                }}
+                                className="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                            >
+                                Remove
+                            </button>
                         )}
                     </div>
                 ))}

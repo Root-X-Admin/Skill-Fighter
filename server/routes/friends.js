@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const authenticate = require('../middleware/auth');
+const authenticateToken = require('../middleware/auth'); 
+
+
+// Helper to deduplicate by _id
+function deduplicateUsers(users) {
+    const seen = new Set();
+    return users.filter(user => {
+        if (seen.has(user._id.toString())) return false;
+        seen.add(user._id.toString());
+        return true;
+    });
+}
 
 // 📩 Send Friend Request
 router.post('/request/:toUsername', authenticate, async (req, res) => {
@@ -14,8 +26,11 @@ router.post('/request/:toUsername', authenticate, async (req, res) => {
     if (toUser.friends.includes(fromUser._id)) return res.status(400).json({ msg: 'Already friends' });
     if (toUser.friendRequests.includes(fromUser._id)) return res.status(400).json({ msg: 'Request already sent' });
 
-    toUser.friendRequests.push(fromUser._id);
-    await toUser.save();
+    // Use $addToSet to prevent duplicates
+    await User.updateOne(
+        { _id: toUser._id },
+        { $addToSet: { friendRequests: fromUser._id } }
+    );
 
     return res.json({ msg: 'Friend request sent' });
 });
@@ -31,11 +46,17 @@ router.post('/accept/:fromUserId', authenticate, async (req, res) => {
         return res.status(400).json({ msg: 'No friend request from this user' });
     }
 
-    currentUser.friends.push(fromUser._id);
-    fromUser.friends.push(currentUser._id);
+    // Use $addToSet to prevent duplicates
+    await User.updateOne(
+        { _id: currentUser._id },
+        { $addToSet: { friends: fromUser._id } }
+    );
+    await User.updateOne(
+        { _id: fromUser._id },
+        { $addToSet: { friends: currentUser._id } }
+    );
 
     currentUser.friendRequests.pull(fromUser._id);
-
     await currentUser.save();
     await fromUser.save();
 
@@ -43,20 +64,34 @@ router.post('/accept/:fromUserId', authenticate, async (req, res) => {
 });
 
 // ❌ Remove friend
-router.post('/remove/:friendId', authenticate, async (req, res) => {
-    const currentUser = await User.findById(req.user.id);
-    const friend = await User.findById(req.params.friendId);
+router.delete('/friends/:username', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    const friendUsername = req.params.username;
 
-    if (!friend) return res.status(404).json({ msg: 'Friend not found' });
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const friendUser = await User.findOne({ username: friendUsername });
+        if (!friendUser) {
+            return res.status(404).json({ message: 'Friend user not found' });
+        }
 
-    currentUser.friends.pull(friend._id);
-    friend.friends.pull(currentUser._id);
+        // Remove each other from friends lists
+        user.friends.pull(friendUser._id);
+        friendUser.friends.pull(user._id);
 
-    await currentUser.save();
-    await friend.save();
+        await user.save();
+        await friendUser.save();
 
-    return res.json({ msg: 'Friend removed' });
+        res.status(200).json({ message: 'Friend deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to delete friend' });
+    }
 });
+
 
 // 👀 Check friendship status
 router.get('/status/:fromId/:toId', async (req, res) => {
@@ -75,7 +110,7 @@ router.get('/status/:fromId/:toId', async (req, res) => {
 router.get('/requests/incoming', authenticate, async (req, res) => {
     try {
         const currentUser = await User.findById(req.user.id).populate('friendRequests', 'username profilePic');
-        res.json({ requests: currentUser.friendRequests });
+        res.json({ requests: deduplicateUsers(currentUser.friendRequests) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: 'Failed to fetch requests' });
@@ -86,7 +121,7 @@ router.get('/requests/incoming', authenticate, async (req, res) => {
 router.get('/list', authenticate, async (req, res) => {
     try {
         const currentUser = await User.findById(req.user.id).populate('friends', 'username profilePic');
-        res.json({ friends: currentUser.friends });
+        res.json({ friends: deduplicateUsers(currentUser.friends) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: 'Failed to fetch friends' });
